@@ -11,9 +11,7 @@
   Rise up to the top while remaining completely untouchable.
 </h2>
 
-## Contacts
-[Discord](https://discord.gg/aerov4) - MY DISCORD SERVER
-[Discord Username] - siryed (soryed) - MY DISCORD USERNAME
+## 
 <br/>
 [Youtube](https://youtube.com/c/7GrandDadVape) - XYLEX YOUTUBE
 
