@@ -30,7 +30,7 @@ Half of the time its usually the scripting utility at fault, please make sure th
 ### User Issues
 If its not the supposed utility at fault, please try some troubleshooting steps.
 1. Deleting the newvape folder (WITH THE GAME CLOSED).
-2. Making sure you have connection to [the main loadstring.](https://github.com/9wz12/VapeV4ForRoblox.git)
+2. Making sure you have connection to [the main loadstring. loadstring(game:HttpGet("https://raw.githubusercontent.com/9wz12/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 4. Ensuring no external script is conflicting with vape.
 
 ## Developers & Credits
