@@ -30,8 +30,8 @@ Half of the time its usually the scripting utility at fault, please make sure th
 ### User Issues
 If its not the supposed utility at fault, please try some troubleshooting steps.
 1. Deleting the newvape folder (WITH THE GAME CLOSED).
-2. Making sure you have connection to [the main loadstring.](https://raw.githubusercontent.com/asdadasda123716/VapeV4ForRoblox/refs/heads/main/NewMainScript.lua)
-3. Ensuring no external script is conflicting with vape.
+2. Making sure you have connection to [the main loadstring.](https://github.com/9wz12/VapeV4ForRoblox.git)
+4. Ensuring no external script is conflicting with vape.
 
 ## Developers & Credits
 [soryed](http://github.com/wrj80z) - fixed xylex vape
