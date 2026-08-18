@@ -10,14 +10,12 @@ if identifyexecutor then
 end
 
 local vape
--- preserve the original loader (loadstring or load) to avoid recursive wrapper
-local _orig_loadstring = loadstring or load
-local loadstring = function(code, name)
-	local fn, err = _orig_loadstring(code, name)
-	if err and vape and type(vape.CreateNotification) == 'function' then
+local loadstring = function(...)
+	local res, err = loadstring(...)
+	if err and vape then
 		vape:CreateNotification('Vape', 'Failed to load : '..err, 30, 'alert')
 	end
-	return fn, err
+	return res
 end
 local queue_on_teleport = queue_on_teleport or function() end
 local isfile = isfile or function(file)
@@ -58,7 +56,7 @@ local function finishLoading()
 	end)
 
 	local teleportedServers
-	local teleportConn = playersService.LocalPlayer.OnTeleport:Connect(function()
+	vape:Clean(playersService.LocalPlayer.OnTeleport:Connect(function()
 		if (not teleportedServers) and (not shared.VapeIndependent) then
 			teleportedServers = true
 			local teleportScript = [[
@@ -78,17 +76,7 @@ local function finishLoading()
 			vape:Save()
 			queue_on_teleport(teleportScript)
 		end
-	end)
-
-	-- call vape:Clean if available, otherwise keep the connection in a fallback table so it can be cleaned later
-	if vape and type(vape.Clean) == 'function' then
-		vape:Clean(teleportConn)
-	else
-		if vape then
-			vape.__connections = vape.__connections or {}
-			table.insert(vape.__connections, teleportConn)
-		end
-	end
+	end))
 
 	if not shared.vapereload then
 		if not vape.Categories then return end
@@ -110,58 +98,19 @@ vape = loadstring(downloadFile('newvape/guis/'..gui..'.lua'), 'gui')()
 shared.vape = vape
 
 if not shared.VapeIndependent then
-	-- try to load a game-specific script first (local cached file or remote); fall back to universal.lua only if not found
-	local gameFilePath = 'newvape/games/'..game.PlaceId..'.lua'
-
-	local function tryLoadGameScript()
-		-- Force game 6872265039 to always inject
-		if game.PlaceId == 6872265039 then
-			if isfile(gameFilePath) then
-				-- load local cached game script
-				loadstring(readfile(gameFilePath), tostring(game.PlaceId))(...)
-				return true
-			else
-				-- try remote unless in developer mode (developer may want to use local files)
-				if not shared.VapeDeveloper then
-					local suc, res = pcall(function()
-						return game:HttpGet('https://raw.githubusercontent.com/9wz12/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
-					end)
-					if suc and res ~= '404: Not Found' then
-						-- downloadFile will write the file locally and return its contents
-						loadstring(downloadFile(gameFilePath), tostring(game.PlaceId))(...)
-						return true
-					end
-				end
-			end
-			-- Force injection for this game ID even if file not found
-			return true
-		end
-
-		if isfile(gameFilePath) then
-			-- load local cached game script
-			loadstring(readfile(gameFilePath), tostring(game.PlaceId))(...)
-			return true
-		else
-			-- try remote unless in developer mode (developer may want to use local files)
-			if not shared.VapeDeveloper then
-				local suc, res = pcall(function()
-					return game:HttpGet('https://raw.githubusercontent.com/9wz12/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
-				end)
-				if suc and res ~= '404: Not Found' then
-					-- downloadFile will write the file locally and return its contents
-					loadstring(downloadFile(gameFilePath), tostring(game.PlaceId))(...)
-					return true
-				end
+	loadstring(downloadFile('newvape/games/universal.lua'), 'universal')()
+	if isfile('newvape/games/'..game.PlaceId..'.lua') then
+		loadstring(readfile('newvape/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId))(...)
+	else
+		if not shared.VapeDeveloper then
+			local suc, res = pcall(function()
+				return game:HttpGet('https://raw.githubusercontent.com/9wz12/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
+			end)
+			if suc and res ~= '404: Not Found' then
+				loadstring(downloadFile('newvape/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId))(...)
 			end
 		end
-		return false
 	end
-
-	-- Load game script first; if none found, load universal
-	if not tryLoadGameScript() then
-		loadstring(downloadFile('newvape/games/universal.lua'), 'universal')()
-	end
-
 	finishLoading()
 else
 	vape.Init = finishLoading
