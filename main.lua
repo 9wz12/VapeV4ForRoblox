@@ -132,7 +132,3 @@ else
 	vape.Init = finishLoading
 	return vape
 end
-else
-	vape.Init = finishLoading
-	return vape
-end
