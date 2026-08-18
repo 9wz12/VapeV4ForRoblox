@@ -2757,8 +2757,8 @@ end
 		SwingRange = Killaura:CreateSlider({
 			Name = 'Swing range',
 			Min = 1,
-			Max = 18,
-			Default = 18,
+			Max = 30,
+			Default = 30,
 			Suffix = function(val)
 				return val == 1 and 'stud' or 'studs'
 			end
@@ -2766,8 +2766,8 @@ end
 		AttackRange = Killaura:CreateSlider({
 			Name = 'Attack range',
 			Min = 1,
-			Max = 18,
-			Default = 18,
+			Max = 30,
+			Default = 30,
 			Suffix = function(val)
 				return val == 1 and 'stud' or 'studs'
 			end
