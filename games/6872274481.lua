@@ -1,1 +1,1 @@
-<entire file content with AttackRemote block replaced>
+<merged file content>
