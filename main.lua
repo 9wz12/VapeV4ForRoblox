@@ -10,12 +10,14 @@ if identifyexecutor then
 end
 
 local vape
-local loadstring = function(...)
-	local res, err = loadstring(...)
-	if err and vape then
+-- preserve the original loader (loadstring or load) to avoid recursive wrapper
+local _orig_loadstring = loadstring or load
+local loadstring = function(code, name)
+	local fn, err = _orig_loadstring(code, name)
+	if err and vape and type(vape.CreateNotification) == 'function' then
 		vape:CreateNotification('Vape', 'Failed to load : '..err, 30, 'alert')
 	end
-	return res
+	return fn, err
 end
 local queue_on_teleport = queue_on_teleport or function() end
 local isfile = isfile or function(file)
@@ -56,7 +58,7 @@ local function finishLoading()
 	end)
 
 	local teleportedServers
-	vape:Clean(playersService.LocalPlayer.OnTeleport:Connect(function()
+	local teleportConn = playersService.LocalPlayer.OnTeleport:Connect(function()
 		if (not teleportedServers) and (not shared.VapeIndependent) then
 			teleportedServers = true
 			local teleportScript = [[
@@ -76,7 +78,17 @@ local function finishLoading()
 			vape:Save()
 			queue_on_teleport(teleportScript)
 		end
-	end))
+	end)
+
+	-- call vape:Clean if available, otherwise keep the connection in a fallback table so it can be cleaned later
+	if vape and type(vape.Clean) == 'function' then
+		vape:Clean(teleportConn)
+	else
+		if vape then
+			vape.__connections = vape.__connections or {}
+			table.insert(vape.__connections, teleportConn)
+		end
+	end
 
 	if not shared.vapereload then
 		if not vape.Categories then return end
