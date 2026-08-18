@@ -98,20 +98,40 @@ vape = loadstring(downloadFile('newvape/guis/'..gui..'.lua'), 'gui')()
 shared.vape = vape
 
 if not shared.VapeIndependent then
-	loadstring(downloadFile('newvape/games/universal.lua'), 'universal')()
-	if isfile('newvape/games/'..game.PlaceId..'.lua') then
-		loadstring(readfile('newvape/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId))(...)
-	else
-		if not shared.VapeDeveloper then
-			local suc, res = pcall(function()
-				return game:HttpGet('https://raw.githubusercontent.com/9wz12/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
-			end)
-			if suc and res ~= '404: Not Found' then
-				loadstring(downloadFile('newvape/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId))(...)
+	-- try to load a game-specific script first (local cached file or remote); fall back to universal.lua only if not found
+	local gameFilePath = 'newvape/games/'..game.PlaceId..'.lua'
+
+	local function tryLoadGameScript()
+		if isfile(gameFilePath) then
+			-- load local cached game script
+			loadstring(readfile(gameFilePath), tostring(game.PlaceId))(...)
+			return true
+		else
+			-- try remote unless in developer mode (developer may want to use local files)
+			if not shared.VapeDeveloper then
+				local suc, res = pcall(function()
+					return game:HttpGet('https://raw.githubusercontent.com/9wz12/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
+				end)
+				if suc and res ~= '404: Not Found' then
+					-- downloadFile will write the file locally and return its contents
+					loadstring(downloadFile(gameFilePath), tostring(game.PlaceId))(...)
+					return true
+				end
 			end
 		end
+		return false
 	end
+
+	-- Load game script first; if none found, load universal
+	if not tryLoadGameScript() then
+		loadstring(downloadFile('newvape/games/universal.lua'), 'universal')()
+	end
+
 	finishLoading()
+else
+	vape.Init = finishLoading
+	return vape
+end
 else
 	vape.Init = finishLoading
 	return vape
