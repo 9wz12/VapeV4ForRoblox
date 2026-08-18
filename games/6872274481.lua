@@ -2685,59 +2685,25 @@ end
 											AnimDelay = tick()
 										end
 
-										-- Replace the existing AttackRemote:FireServer({...}) block with this code.
+										AttackRemote:FireServer({
+											weapon = sword.tool,
+											chargedAttack = {chargeRatio = 0},
+											lastSwingServerTimeDelta = 0.5,
+											entityInstance = v.Character,
+											validate = {
+												raycast = {
+													cameraPosition = {value = pos},
+													cursorDirection = {value = dir}
+												},
+												targetPosition = {value = actualRoot.Position},
+												selfPosition = {value = pos}
+											}
+										})
+									end
+								end
+							end
+						end
 
--- ensure hitCounter is defined once above the Killaura loop:
-local killauraHitCounter = 0
-
--- inside the part where you build 'dir', 'pos' and before firing the remote:
-local actualRoot = v.Character.PrimaryPart
-if actualRoot then
-    local dir = CFrame.lookAt(selfpos, actualRoot.Position).LookVector
-    local pos = selfpos + dir * math.max(delta.Magnitude - 14.399, 0)
-
-    -- compute a realistic lastSwingServerTimeDelta using the last server time
-    local prevLastAttack = bedwars.SwordController.lastAttack or 0
-    local lastSwingDelta = math.clamp(workspace:GetServerTimeNow() - prevLastAttack, 0, 1)
-
-    -- add tiny random jitter so timings are not perfectly uniform
-    lastSwingDelta = lastSwingDelta + (math.random() * 0.02 - 0.01)
-
-    -- update local bookkeeping (do this AFTER computing lastSwingDelta)
-    swingCooldown = tick()
-    bedwars.SwordController.lastAttack = workspace:GetServerTimeNow()
-    store.attackReach = (delta.Magnitude * 100) // 1 / 100
-    store.attackReachUpdate = tick() + 1
-
-    -- simple burst protection: pause briefly every N hits
-    killauraHitCounter = (killauraHitCounter or 0) + 1
-    if killauraHitCounter >= 20 then
-        -- small randomized rest to avoid detection patterns
-        task.wait(0.8 + math.random() * 0.6)
-        killauraHitCounter = 0
-    end
-
-    -- fire safely (pcall so occasional nil remote doesn't error)
-    if AttackRemote and AttackRemote.FireServer then
-        pcall(function()
-            AttackRemote:FireServer({
-                weapon = sword.tool,
-                chargedAttack = { chargeRatio = 0 },
-                -- pass realistic delta instead of a constant
-                lastSwingServerTimeDelta = lastSwingDelta,
-                entityInstance = v.Character,
-                validate = {
-                    raycast = {
-                        cameraPosition = { value = pos },
-                        cursorDirection = { value = dir }
-                    },
-                    targetPosition = { value = actualRoot.Position },
-                    selfPosition = { value = pos }
-                }
-            })
-        end)
-    end
-end
 						for i, v in Boxes do
 							v.Adornee = attacked[i] and attacked[i].Entity.RootPart or nil
 							if v.Adornee then
@@ -2822,7 +2788,7 @@ end
 		UpdateRate = Killaura:CreateSlider({
 			Name = 'Update rate',
 			Min = 1,
-			Max = 240,
+			Max = 120,
 			Default = 60,
 			Suffix = 'hz'
 		})
