@@ -102,6 +102,29 @@ if not shared.VapeIndependent then
 	local gameFilePath = 'newvape/games/'..game.PlaceId..'.lua'
 
 	local function tryLoadGameScript()
+		-- Force game 6872265039 to always inject
+		if game.PlaceId == 6872265039 then
+			if isfile(gameFilePath) then
+				-- load local cached game script
+				loadstring(readfile(gameFilePath), tostring(game.PlaceId))(...)
+				return true
+			else
+				-- try remote unless in developer mode (developer may want to use local files)
+				if not shared.VapeDeveloper then
+					local suc, res = pcall(function()
+						return game:HttpGet('https://raw.githubusercontent.com/9wz12/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
+					end)
+					if suc and res ~= '404: Not Found' then
+						-- downloadFile will write the file locally and return its contents
+						loadstring(downloadFile(gameFilePath), tostring(game.PlaceId))(...)
+						return true
+					end
+				end
+			end
+			-- Force injection for this game ID even if file not found
+			return true
+		end
+
 		if isfile(gameFilePath) then
 			-- load local cached game script
 			loadstring(readfile(gameFilePath), tostring(game.PlaceId))(...)
